@@ -4,8 +4,11 @@ import random
 SCREEN_WIDTH =600
 SCREEN_HEIGHT = 600
 MOVEMENT_SPEED = 4
-
+FOOD_COUNT = 20
+SPRITE_SCALING_FOOD = 0.035
 SPRITE_SCALING_WATER = 1.5
+SPRITE_SCALING_FISH = 0.05
+
 class Water(arcade.Sprite):
     def reset_pos(self):
         # Reset the water to a random spot above the screen
@@ -20,6 +23,17 @@ class Water(arcade.Sprite):
         # If so, reset it.
         if self.top < 0:
             self.reset_pos()
+
+class Food(arcade.Sprite):
+    def reset_pos(self):
+        self.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
+        self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT*2)
+
+    def update(self):
+        self.center_y -= 1
+        if self.top < 0:
+            self.reset_pos()
+
 
 class Player(arcade.Sprite):
 
@@ -38,13 +52,6 @@ class Player(arcade.Sprite):
             self.top = SCREEN_HEIGHT - 2
 
 
-"""
-class Grass(arcade.load_texture):
-    def reset_pos(self):
-        self.center_y = SCREEN_HEIGHT
-        self.center_x = SCREEN_WIDTH*(1/10)
-"""
-
 class MyGame(arcade.Window):
     """ Main application class. """
 
@@ -54,15 +61,17 @@ class MyGame(arcade.Window):
         self.fish_sprite = None
         self.score = 0
         self.grass = None
-        self.water = None
         self.water_sprite_list = None
+        self.food_sprite_list = None
 
 
     def setup(self):
         self.grass = arcade.load_texture("Images/grass.jpg")
-        self.water = arcade.load_texture("Images/water.jpg")
+
         self.fish_list = arcade.SpriteList()
         self.water_sprite_list = arcade.SpriteList()
+        self.food_sprite_list = arcade.SpriteList()
+
         water = Water("Images/water.jpg", SPRITE_SCALING_WATER)
         water.center_x = SCREEN_WIDTH//2
         water.center_y = SCREEN_HEIGHT
@@ -80,14 +89,20 @@ class MyGame(arcade.Window):
         water3.center_y = 0
         self.water_sprite_list.append(water3)
 
+        for i in range(FOOD_COUNT):
+            food = Food("Images/food.jpg", SPRITE_SCALING_FOOD)
+            food.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
+            food.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT*2)
+            self.food_sprite_list.append(food)
+
         self.score = 0
-        SPRITE_SCALING_FISH = 0.05
         self.fish_sprite = Player("Images/fish.png", SPRITE_SCALING_FISH)
         self.fish_sprite.center_x = SCREEN_WIDTH /2
         self.fish_sprite.center_y = 50
         self.fish_sprite.angle = -90
         self.fish_sprite.boundary_right = SCREEN_WIDTH *(4/5)
         self.fish_list.append(self.fish_sprite)
+
 
     def on_draw(self):
         arcade.start_render()
@@ -103,14 +118,11 @@ class MyGame(arcade.Window):
                                       SCREEN_WIDTH*(1/5),
                                       SCREEN_HEIGHT,
                                       self.grass)
-        arcade.draw_texture_rectangle(SCREEN_WIDTH//2,
-                                      SCREEN_HEIGHT//2,
-                                      SCREEN_WIDTH*(3/5),
-                                      SCREEN_HEIGHT,
-                                      self.water)
         self.water_sprite_list.draw()
+        self.food_sprite_list.draw()
         self.fish_list.draw()
-
+        output = f"Score: {self.score}"
+        arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
 
 
     def on_key_press(self, key, modifiers):
@@ -134,6 +146,12 @@ class MyGame(arcade.Window):
         """ All the logic to move, and the game logic goes here. """
         self.water_sprite_list.update()
         self.fish_list.update()
+        self.food_sprite_list.update()
+        hit_list = arcade.check_for_collision_with_list(self.fish_sprite,
+                                                        self.food_sprite_list)
+        for food in hit_list:
+            food.kill()
+            self.score += 1
 
 
 def main():
