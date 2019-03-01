@@ -5,6 +5,21 @@ SCREEN_WIDTH =600
 SCREEN_HEIGHT = 600
 MOVEMENT_SPEED = 4
 
+SPRITE_SCALING_WATER = 1.5
+class Water(arcade.Sprite):
+    def reset_pos(self):
+        # Reset the water to a random spot above the screen
+        self.center_y = random.randrange(SCREEN_HEIGHT + 20,
+                                         SCREEN_HEIGHT + 100)
+        self.center_x = SCREEN_WIDTH//2
+
+    def update(self):
+        # Move the water
+        self.center_y -= 1
+        # See if the water has fallen off the bottom of the screen.
+        # If so, reset it.
+        if self.top < 0:
+            self.reset_pos()
 
 class Player(arcade.Sprite):
 
@@ -22,10 +37,6 @@ class Player(arcade.Sprite):
         elif self.top > SCREEN_HEIGHT - 2:
             self.top = SCREEN_HEIGHT - 2
 
-class Water(arcade.Sprite):
-    def update(self):
-        self.center_y -= 1
-
 
 """
 class Grass(arcade.load_texture):
@@ -33,6 +44,7 @@ class Grass(arcade.load_texture):
         self.center_y = SCREEN_HEIGHT
         self.center_x = SCREEN_WIDTH*(1/10)
 """
+
 class MyGame(arcade.Window):
     """ Main application class. """
 
@@ -43,11 +55,31 @@ class MyGame(arcade.Window):
         self.score = 0
         self.grass = None
         self.water = None
+        self.water_sprite_list = None
+
 
     def setup(self):
         self.grass = arcade.load_texture("Images/grass.jpg")
         self.water = arcade.load_texture("Images/water.jpg")
         self.fish_list = arcade.SpriteList()
+        self.water_sprite_list = arcade.SpriteList()
+        water = Water("Images/water.jpg", SPRITE_SCALING_WATER)
+        water.center_x = SCREEN_WIDTH//2
+        water.center_y = SCREEN_HEIGHT
+        self.water_sprite_list.append(water)
+        water1 = Water("Images/water.jpg", SPRITE_SCALING_WATER)
+        water1.center_x = SCREEN_WIDTH//2
+        water1.center_y = SCREEN_HEIGHT*(2/3)
+        self.water_sprite_list.append(water1)
+        water2 = Water("Images/water.jpg", SPRITE_SCALING_WATER)
+        water2.center_x = SCREEN_WIDTH//2
+        water2.center_y = SCREEN_WIDTH//3
+        self.water_sprite_list.append(water2)
+        water3 = Water("Images/water.jpg", SPRITE_SCALING_WATER)
+        water3.center_x = SCREEN_WIDTH//2
+        water3.center_y = 0
+        self.water_sprite_list.append(water3)
+
         self.score = 0
         SPRITE_SCALING_FISH = 0.05
         self.fish_sprite = Player("Images/fish.png", SPRITE_SCALING_FISH)
@@ -76,6 +108,7 @@ class MyGame(arcade.Window):
                                       SCREEN_WIDTH*(3/5),
                                       SCREEN_HEIGHT,
                                       self.water)
+        self.water_sprite_list.draw()
         self.fish_list.draw()
 
 
@@ -99,7 +132,9 @@ class MyGame(arcade.Window):
 
     def update(self, delta_time):
         """ All the logic to move, and the game logic goes here. """
+        self.water_sprite_list.update()
         self.fish_list.update()
+
 
 def main():
     game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT)
