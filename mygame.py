@@ -4,12 +4,12 @@ import random
 SCREEN_WIDTH =600
 SCREEN_HEIGHT = 600
 MOVEMENT_SPEED = 4
-FOOD_COUNT = 20
-LOG_COUNT = 10
+FOOD_COUNT = 10
+LOG_COUNT = 6
 SPRITE_SCALING_FOOD = 0.035
 SPRITE_SCALING_WATER = 1.5
 SPRITE_SCALING_FISH = 0.05
-SPRITE_SCALING_LOG = .2
+SPRITE_SCALING_LOG = .15
 
 class Water(arcade.Sprite):
     def reset_pos(self):
@@ -28,7 +28,7 @@ class Water(arcade.Sprite):
 class Food(arcade.Sprite):
     def reset_pos(self):
         self.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
-        self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT*2)
+        self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT+10)
 
     def update(self):
         self.center_y -= 1
