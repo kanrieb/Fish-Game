@@ -3,6 +3,7 @@ import random
 
 SCREEN_WIDTH =600
 SCREEN_HEIGHT = 600
+
 MOVEMENT_SPEED = 4
 FOOD_COUNT = 10
 LOG_COUNT = 6
@@ -10,6 +11,10 @@ SPRITE_SCALING_FOOD = 0.035
 SPRITE_SCALING_WATER = 1.5
 SPRITE_SCALING_FISH = 0.05
 SPRITE_SCALING_LOG = .15
+
+INSTRUCTIONS_PAGE_0 = 0
+GAME_RUNNING = 1
+GAME_OVER = 2
 
 class Water(arcade.Sprite):
     def reset_pos(self):
@@ -66,6 +71,7 @@ class MyGame(arcade.Window):
     """ Main application class. """
 
     def __init__(self, width, height):
+        self.current_state = INSTRUCTIONS_PAGE_0
         super().__init__(width, height)
         self.fish_list= None
         self.fish_sprite = None
@@ -74,6 +80,10 @@ class MyGame(arcade.Window):
         self.log_sprite_list = None
         self.water_sprite_list = None
         self.food_sprite_list = None
+
+        self.instructions = []
+        texture = arcade.load_texture("Images/instructions_0.png")
+        self.instructions.append(texture)
 
 
     def setup(self):
@@ -121,9 +131,27 @@ class MyGame(arcade.Window):
         self.fish_sprite.boundary_right = SCREEN_WIDTH *(4/5)
         self.fish_list.append(self.fish_sprite)
 
+    def draw_instructions_page(self, page_number):
+        """
+        Draw an instruction page. Load the page as an image.
+        """
+        page_texture = self.instructions[page_number]
+        arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
+                                      page_texture.width,
+                                      page_texture.height, page_texture, 0)
 
-    def on_draw(self):
-        arcade.start_render()
+
+    def draw_game_over(self):
+        """
+        Draw "Game over" across the screen.
+        """
+        output = "Game Over"
+        arcade.draw_text(output, 110, 300, arcade.color.WHITE, 54)
+
+        output = "Click to restart"
+        arcade.draw_text(output, 180, 250, arcade.color.WHITE, 24)
+
+    def draw_game(self):
         arcade.draw_texture_rectangle(SCREEN_WIDTH//10,
                                       SCREEN_HEIGHT//2,
                                       SCREEN_WIDTH*(1/5),
@@ -141,38 +169,68 @@ class MyGame(arcade.Window):
         output = f"Score: {self.score}"
         arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
 
+    def on_draw(self):
+        arcade.start_render()
+        if self.current_state == INSTRUCTIONS_PAGE_0:
+            self.draw_instructions_page(0)
+
+        elif self.current_state == GAME_RUNNING:
+            self.draw_game()
+
+        else:
+            self.draw_game()
+            self.draw_game_over() 
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        """
+        Called when the user presses a mouse button.
+        """
+
+        # Change states as needed.
+        if self.current_state == INSTRUCTIONS_PAGE_0:
+            self.setup()
+            self.current_state = GAME_RUNNING
+        elif self.current_state == GAME_OVER:
+            # Restart the game.
+            self.setup()
+            self.current_state = GAME_RUNNING
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP:
-            self.fish_sprite.change_y = MOVEMENT_SPEED
-        elif key == arcade.key.DOWN:
-            self.fish_sprite.change_y = -MOVEMENT_SPEED
-        elif key == arcade.key.LEFT:
-            self.fish_sprite.change_x = -MOVEMENT_SPEED
-        elif key == arcade.key.RIGHT:
-            self.fish_sprite.change_x = MOVEMENT_SPEED
+        if self.current_state == GAME_RUNNING:
+            if key == arcade.key.UP:
+                self.fish_sprite.change_y = MOVEMENT_SPEED
+            elif key == arcade.key.DOWN:
+                self.fish_sprite.change_y = -MOVEMENT_SPEED
+            elif key == arcade.key.LEFT:
+                self.fish_sprite.change_x = -MOVEMENT_SPEED
+            elif key == arcade.key.RIGHT:
+                self.fish_sprite.change_x = MOVEMENT_SPEED
 
     def on_key_release(self, key, modifiers):
-        if key == arcade.key.UP or key == arcade.key.DOWN:
-            self.fish_sprite.change_y = 0
-        elif key == arcade.key.LEFT or key == arcade.key.RIGHT:
-            self.fish_sprite.change_x = 0
+        if self.current_state == GAME_RUNNING:
+            if key == arcade.key.UP or key == arcade.key.DOWN:
+                self.fish_sprite.change_y = 0
+            elif key == arcade.key.LEFT or key == arcade.key.RIGHT:
+                self.fish_sprite.change_x = 0
 
     def update(self, delta_time):
         """ All the logic to move, and the game logic goes here. """
-        self.water_sprite_list.update()
-        self.fish_list.update()
-        self.food_sprite_list.update()
-        self.log_sprite_list.update()
-        hit_list = arcade.check_for_collision_with_list(self.fish_sprite,
-                                                        self.food_sprite_list)
-        for food in hit_list:
-            food.kill()
-            self.score += 1
-        kill_list = arcade.check_for_collision_with_list(self.fish_sprite,
-                                                         self.log_sprite_list)
-        for log in kill_list:
-            log.kill()
+        if self.current_state == GAME_RUNNING:
+            self.water_sprite_list.update()
+            self.fish_list.update()
+            self.food_sprite_list.update()
+            self.log_sprite_list.update()
+            hit_list = arcade.check_for_collision_with_list(self.fish_sprite, self.food_sprite_list)
+            for food in hit_list:
+                food.kill()
+                self.score += 1
+
+            kill_list = arcade.check_for_collision_with_list(self.fish_sprite,self.log_sprite_list)
+            for log in kill_list:
+                log.kill()
+
+            if self.score == 10:
+                self.current_state = GAME_OVER
 
 
 def main():
