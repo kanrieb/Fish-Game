@@ -43,7 +43,7 @@ class Food(arcade.Sprite):
 
 class Log(arcade.Sprite):
     def reset_pos(self):
-        self.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
+        self.center_x = random.randrange(SCREEN_WIDTH/4 +20, SCREEN_WIDTH*(4/6)-7)
         self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT+20)
     
     def update(self):
@@ -158,7 +158,7 @@ class MyGame(arcade.Window):
         Draw "Finished" across the screen.
         """
         output = "Finished!"
-        arcade.draw_text(output, 110, 300, arcade.color.WHITE, 54)
+        arcade.draw_text(output, 170, 300, arcade.color.WHITE, 54)
 
     def draw_game(self):
         arcade.draw_texture_rectangle(SCREEN_WIDTH//10,
@@ -175,7 +175,7 @@ class MyGame(arcade.Window):
         self.food_sprite_list.draw()
         self.log_sprite_list.draw()
         self.fish_list.draw()
-        output = f"Score: {self.score}"
+        output = f"Score: {self.score_food}"
         arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
 
     def on_draw(self):
@@ -249,9 +249,11 @@ class MyGame(arcade.Window):
 
             if self.score_log > 0:
                 self.score_log = 0
+                self.score_food = 0
                 self.current_state = GAME_OVER
 
             if self.score_food == 10:
+                self.score_food = 0
                 self.current_state = FINISHED
 
 
