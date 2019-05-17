@@ -15,6 +15,7 @@ SPRITE_SCALING_LOG = .15
 INSTRUCTIONS_PAGE_0 = 0
 GAME_RUNNING = 1
 GAME_OVER = 2
+FINISHED = 3
 
 class Water(arcade.Sprite):
     def reset_pos(self):
@@ -33,7 +34,7 @@ class Water(arcade.Sprite):
 class Food(arcade.Sprite):
     def reset_pos(self):
         self.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
-        self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT+10)
+        self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT+20)
 
     def update(self):
         self.center_y -= 1
@@ -43,7 +44,7 @@ class Food(arcade.Sprite):
 class Log(arcade.Sprite):
     def reset_pos(self):
         self.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
-        self.center_y = SCREEN_HEIGHT
+        self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT+20)
     
     def update(self):
         self.center_y -= 1
@@ -75,7 +76,8 @@ class MyGame(arcade.Window):
         super().__init__(width, height)
         self.fish_list= None
         self.fish_sprite = None
-        self.score = 0
+        self.score_food = 0
+        self.score_log = 0
         self.grass = None
         self.log_sprite_list = None
         self.water_sprite_list = None
@@ -151,6 +153,13 @@ class MyGame(arcade.Window):
         output = "Click to restart"
         arcade.draw_text(output, 180, 250, arcade.color.WHITE, 24)
 
+    def draw_finished(self):
+        """
+        Draw "Finished" across the screen.
+        """
+        output = "Finished!"
+        arcade.draw_text(output, 110, 300, arcade.color.WHITE, 54)
+
     def draw_game(self):
         arcade.draw_texture_rectangle(SCREEN_WIDTH//10,
                                       SCREEN_HEIGHT//2,
@@ -177,6 +186,10 @@ class MyGame(arcade.Window):
         elif self.current_state == GAME_RUNNING:
             self.draw_game()
 
+        elif self.current_state == FINISHED:
+            self.draw_game()
+            self.draw_finished()
+
         else:
             self.draw_game()
             self.draw_game_over() 
@@ -191,6 +204,10 @@ class MyGame(arcade.Window):
             self.setup()
             self.current_state = GAME_RUNNING
         elif self.current_state == GAME_OVER:
+            # Restart the game.
+            self.setup()
+            self.current_state = GAME_RUNNING
+        elif self.current_state == FINISHED:
             # Restart the game.
             self.setup()
             self.current_state = GAME_RUNNING
@@ -220,17 +237,22 @@ class MyGame(arcade.Window):
             self.fish_list.update()
             self.food_sprite_list.update()
             self.log_sprite_list.update()
+            
             hit_list = arcade.check_for_collision_with_list(self.fish_sprite, self.food_sprite_list)
             for food in hit_list:
                 food.kill()
-                self.score += 1
+                self.score_food += 1
 
             kill_list = arcade.check_for_collision_with_list(self.fish_sprite,self.log_sprite_list)
             for log in kill_list:
-                log.kill()
+                self.score_log += 1
 
-            if self.score == 10:
+            if self.score_log > 0:
+                self.score_log = 0
                 self.current_state = GAME_OVER
+
+            if self.score_food == 10:
+                self.current_state = FINISHED
 
 
 def main():
