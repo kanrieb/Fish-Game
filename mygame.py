@@ -32,24 +32,20 @@ class Water(arcade.Sprite):
             self.reset_pos()
 
 class Food(arcade.Sprite):
-    def reset_pos(self):
-        self.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
-        self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT+20)
+   # def reset_pos(self):
+    #    self.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
+     #   self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT*2)
 
     def update(self):
         self.center_y -= 1
-        if self.top < 0:
-            self.reset_pos()
+        #if self.top < 0:
+         #   self.reset_pos()
 
 class Log(arcade.Sprite):
-    def reset_pos(self):
-        self.center_x = random.randrange(SCREEN_WIDTH/4 +20, SCREEN_WIDTH*(4/6)-7)
-        self.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT+20)
-    
     def update(self):
         self.center_y -= 1
-        if self.top < 0:
-            self.reset_pos()
+        #if self.top < 0:
+         #   self.reset_pos()
 
 class Player(arcade.Sprite):
 
@@ -116,16 +112,16 @@ class MyGame(arcade.Window):
         for i in range(FOOD_COUNT):
             food = Food("Images/food.jpg", SPRITE_SCALING_FOOD)
             food.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
-            food.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT*2)
+            food.center_y = random.randrange(SCREEN_HEIGHT*(i+1), (SCREEN_HEIGHT*(i+2)-40))
             self.food_sprite_list.append(food)
 
         for i in range(LOG_COUNT):
             log = Log("Images/log.png", SPRITE_SCALING_LOG)
             log.center_x = random.randrange(SCREEN_WIDTH//4, SCREEN_WIDTH*(4/6))
-            log.center_y = random.randrange(SCREEN_HEIGHT, SCREEN_HEIGHT*2)
+            log.center_y = random.randrange(SCREEN_HEIGHT*(i+1), (SCREEN_HEIGHT*(i+2)-50))
             self.log_sprite_list.append(log)
 
-        self.score = 0
+        self.score_food = 0
         self.fish_sprite = Player("Images/fish.png", SPRITE_SCALING_FISH)
         self.fish_sprite.center_x = SCREEN_WIDTH /2
         self.fish_sprite.center_y = 50
@@ -175,7 +171,7 @@ class MyGame(arcade.Window):
         self.food_sprite_list.draw()
         self.log_sprite_list.draw()
         self.fish_list.draw()
-        output = f"Score: {self.score_food}"
+        output = f"Score: {self.score_food} / {FOOD_COUNT}"
         arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
 
     def on_draw(self):
